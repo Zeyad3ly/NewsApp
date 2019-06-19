@@ -9,11 +9,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -82,10 +84,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         // articles.clear();
                     }
                     articles = response.body().getArticle();
-                    Log.e("loadJson", "data is here :" + articles.get(0).getAuthor());
+
                     adapter = new Adapter(articles, MainActivity.this);
                     recyclerView.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
+                    initListener();
+                    topHeadline.setVisibility(View.VISIBLE);
                     swipeRefreshLayout.setRefreshing(false);
                 } else {
                     swipeRefreshLayout.setRefreshing(false);
@@ -98,6 +102,23 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             public void onFailure(Call<News> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
 
+            }
+        });
+    }
+
+    private void initListener() {
+        adapter.setOnItemClickListener(new Adapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Intent intent = new Intent(MainActivity.this, NewsDetailActivity.class);
+                Article article = articles.get(position);
+                intent.putExtra("url", article.getUrl());
+                intent.putExtra("title", article.getTitle());
+                intent.putExtra("img", article.getUrlToImage());
+                intent.putExtra("date", article.getPublishedAt());
+                intent.putExtra("source", article.getSource().getName());
+                intent.putExtra("author", article.getAuthor());
+                startActivity(intent);
             }
         });
     }
